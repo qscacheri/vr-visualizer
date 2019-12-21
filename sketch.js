@@ -14,7 +14,7 @@ function setup() {
 	noCanvas();
     world = new World('VRScene');
 
-	audioPlayer = new Tone.Player("funk.mp3").toMaster();
+	audioPlayer = new Tone.Player("lux.mp3").toMaster();
 	audioPlayer.autostart = true;
 
 	fft = new Tone.FFT(16);
