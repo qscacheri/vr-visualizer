@@ -37,7 +37,7 @@ function setup() {
  	var towerPos = towerCollection.towers[0].position;
 	console.log(towerPos);
 
-	lightSource = new LightSource(0, color, towerPos.x - 1, 5, towerPos.z);
+	// lightSource = new LightSource(0, color, towerPos.x - 1, 5, towerPos.z);
 	// lightSource2 = new LightSource(0, color, towerPos.x + 1, 5, towerPos.z);
 	// lightSource3 = new LightSource(0, color, towerPos.x, 5, towerPos.z - 1);
 	// lightSource4 = new LightSource(0, color, towerPos.x, 5, towerPos.z + 1);
@@ -47,7 +47,6 @@ function setup() {
 function draw() {
 	// console.log(fft.getValue());
 	towerCollection.update();
-	lightSource.update(towerCollection.towers[0].fftValue / 4);
 }
 
 
@@ -77,12 +76,12 @@ class Tower {
 	}
 
 	update(newValue) {
+		console.log(this.fftValue);
 		this.fftValue = map(newValue, -100, 0, 1, 20);
 		this.object.setHeight(this.fftValue);
 		for (var i = 0; i < this.lightSources.length; i++){
 			this.lightSources[i].update(this.fftValue);
 		}
-		// this.lightSource.setIntensity(this.fftValue / 10);
 	}
 }
 
@@ -131,15 +130,13 @@ class LightSource {
 		var element = document.getElementById("light"  + id);
 		element.setAttribute("position", {x: x, y: y, z: z});
 		element.setAttribute("type", "point")
-		element.setAttribute("decay", 1);
+		element.setAttribute("decay", 0);
 		element.setAttribute("distance", 30);
 	}
 
 	update(newHeight)
 	{
 		document.getElementById("light"  + this.id).setAttribute("intensity", map(newHeight, 1, 20, 0, .1));
-		// console.log($("#light" + this.id).attr('intensity');
-
 	}
 
 }
