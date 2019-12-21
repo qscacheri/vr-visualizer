@@ -5,6 +5,11 @@ var towerCollection;
 var audioPlayer;
 var fft;
 
+var lightSource;
+var lightSource2;
+var lightSource3;
+var lightSource4;
+
 function setup() {
 	noCanvas();
     world = new World('VRScene');
@@ -24,17 +29,25 @@ function setup() {
 	var ground = new Plane({
 		width: 500, height: 500,
 		red: 0, green: 0, blue: 0,
-		rotationX: -90
+		rotationX: -90,
+		metalness: 0,
+		shader: "flat"
 	});
 	world.add(ground);
+ 	var towerPos = towerCollection.towers[0].position;
+	console.log(towerPos);
 
-	// lightSource = new LightSource(color, -1, 1, 1);
+	lightSource = new LightSource(0, color, towerPos.x - 1, 5, towerPos.z);
+	// lightSource2 = new LightSource(0, color, towerPos.x + 1, 5, towerPos.z);
+	// lightSource3 = new LightSource(0, color, towerPos.x, 5, towerPos.z - 1);
+	// lightSource4 = new LightSource(0, color, towerPos.x, 5, towerPos.z + 1);
 
 }
 
 function draw() {
 	// console.log(fft.getValue());
 	towerCollection.update();
+	lightSource.update(towerCollection.towers[0].fftValue / 4);
 }
 
 
@@ -44,12 +57,19 @@ class Tower {
 		this.position = createVector(x, y, z);
 		this.size = 1;
 		this.color = color;
+
 		this.object = new Box({
 			x: this.position.x, y: this.position.y, z: this.position.z,
 			width: this.size, height: 50, depth: this.size,
 			red: this.color.levels[0], green: this.color.levels[1], blue: this.color.levels[2],
 		});
-		this.object.tag.setAttribute('id', "tower" + this.id);
+		// this.object.tag.setAttribute('id', "tower" + this.id);
+
+		this.lightSources = [];
+		this.lightSources.push(new LightSource(id + ".1", "", this.position.x + 1, 5, this.position.z))
+		this.lightSources.push(new LightSource(id + ".2", "", this.position.x - 1, 5, this.position.z))
+		this.lightSources.push(new LightSource(id + ".3", "", this.position.x, 5, this.position.z + 1))
+		this.lightSources.push(new LightSource(id + ".4", "", this.position.x, 5, this.position.z - 1))
 
 		world.add(this.object);
 		// this.lightSource = new LightSource(id, this.color, x, 1, z);
@@ -59,6 +79,9 @@ class Tower {
 	update(newValue) {
 		this.fftValue = map(newValue, -100, 0, 1, 20);
 		this.object.setHeight(this.fftValue);
+		for (var i = 0; i < this.lightSources.length; i++){
+			this.lightSources[i].update(this.fftValue);
+		}
 		// this.lightSource.setIntensity(this.fftValue / 10);
 	}
 }
@@ -80,12 +103,12 @@ class TowerCollection {
 			if (this.mode == "circle")
 				this.towers.push(new Tower(i, towerColor, x, .5, y));
 			if (this.mode == "random")
-				this.towers.push(new Tower(i, towerColor, random(-50, 50), .5, random(-50, 50)));
+				this.towers.push(new Tower(i, towerColor, random(-10, 10), .5, random(-10, 10)));
 		}
 	}
 
 	update() {
-		for (var i = 0; i < fft.size	; i++){
+		for (var i = 0; i < fft.size; i++){
 			this.towers[i].update(fft.getValue()[i]);
 		}
 	}
@@ -101,14 +124,22 @@ class LightSource {
 	constructor(id, lightColor, x, y, z) {
 		this.id = id;
 		this.position = createVector(x, y, z);
-		console.log("new lightsource...");
-		var lightSource = '<a-light type="directional" position="0 0 0" rotation="-90 0 0" target="#tower"' + this.id + ';>';
+		// var lightSource = '<a-entity id="test" light="type: point; distance: 15; decay: 1; color: #FFF; intensity: 1.0" position="' + x + ' ' + y + ' ' + z + '"></a-entity>'
+		var lightSource = '<a-light id=' + "light" + this.id + '></a-light>'
 		$("#VRScene").append(lightSource);
+		console.log($("#light" + this.id));
+		var element = document.getElementById("light"  + id);
+		element.setAttribute("position", {x: x, y: y, z: z});
+		element.setAttribute("type", "point")
+		element.setAttribute("decay", 1);
+		element.setAttribute("distance", 30);
 	}
 
-	setIntensity(newIntensity)
+	update(newHeight)
 	{
-		$("#light" + this.id).attr("intensity", newIntensity);
+		document.getElementById("light"  + this.id).setAttribute("intensity", map(newHeight, 1, 20, 0, .1));
+		// console.log($("#light" + this.id).attr('intensity');
+
 	}
 
 }
