@@ -85,7 +85,7 @@ function Box(opts) {
 
 	// store what kind of primitive shape this entity is
 	this.prim = 'box';
-	
+
 	// setup geometry parameters
 	if (!('width' in opts))  {
 		opts.width = 1;

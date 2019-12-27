@@ -1,3 +1,4 @@
+//hello
 // variable to hold a reference to our A-Frame world
 var world;
 var towerCollection;
